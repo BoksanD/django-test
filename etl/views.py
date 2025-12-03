@@ -1,11 +1,13 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView
 from etl.models import Client,InsurenceType,Subscription
-from django.db.models import Q
+from django.db.models import Q,ExpressionWrapper, DurationField,F
 import subprocess
 import webbrowser
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.utils import timezone
+from .subscription_form import SubscriptionForm
 
 # Create your views here.
 
@@ -45,7 +47,7 @@ class ClientListView(ListView):
     model = Client
     template_name = "etl/client_list.html"
     context_object_name = "clients"
-    paginate_by = 20
+    paginate_by = 5
     
     def get_queryset(self):
         queryset = Client.objects.all().order_by("reg_date")
@@ -112,15 +114,42 @@ class SubscriptionListView(ListView):
     model = Subscription
     template_name = "etl/subscription_list.html"
     context_object_name = "subscriptions"
+    paginate_by = 5
+    
+    def get_queryset(self):
+        queryset = Subscription.objects.annotate(
+    days_left=ExpressionWrapper(F('valid_till') - timezone.now(), output_field=DurationField())
+).order_by('days_left')
+        search_query = self.request.GET.get('search', '')
+        
+        if search_query:
+            queryset = queryset.filter(
+                Q(payment_method__icontains=search_query) |
+                Q(client__name__icontains=search_query) |
+                Q(insurence__name__icontains = search_query)
+            )
+        
+        status_filter = self.request.GET.get('expired', '')
+        now = timezone.now()
+
+        if status_filter == 'active':
+            queryset = queryset.filter(valid_till__gt=now)
+        elif status_filter == 'expired':
+            queryset = queryset.filter(valid_till__lt=now)
+        
+        return queryset
+
+
 class SubscriptionCreateView(CreateView):
     model = Subscription
     template_name = "etl/subscription_form.html"
-    fields = ['payment_method','client','insurence']
+    form_class = SubscriptionForm
     success_url = reverse_lazy('subscription-list')
+    
 class SubscriptionUpdateView(UpdateView):
     model = Subscription
     template_name = "etl/subscription_form.html"
-    fields = ['payment_method','client','insurence']
+    fields = ['payment_method','client','insurence','starts_at']
     success_url = reverse_lazy('subscription-list')
 class SubscriptionDeleteView(DeleteView):
     model = Subscription

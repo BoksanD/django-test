@@ -6,4 +6,4 @@ class InsurenceType(models.Model):
     expires_in_days = models.IntegerField(default=30)
 
     def __str__(self):
-        return self.name
+        return f'{self.name} - is valid for {self.expires_in_days} day(s)'
