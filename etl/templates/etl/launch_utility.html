@@ -1,0 +1,243 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launch Utility</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .utility-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .utility-section h2 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+        input[type="text"],
+        input[type="url"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .messages {
+            margin: 20px 0;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .quick-link-btn {
+            padding: 10px;
+            text-align: center;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .quick-link-btn:hover {
+            background-color: #dee2e6;
+        }
+        .back-link {
+            margin-top: 20px;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .warning-box strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Launch Utility</h1>
+
+        <div class="warning-box">
+            <strong>⚠️ Security Notice:</strong> This utility allows launching URLs and Python scripts. 
+            Ensure you only use trusted sources and scripts.
+        </div>
+
+        <!-- Display Messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- URL Launcher Section -->
+        <div class="utility-section">
+            <h2>🌐 Open URL in Browser</h2>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="open_url">
+                
+                <div class="form-group">
+                    <label for="url">Enter URL:</label>
+                    <input type="url" 
+                           id="url" 
+                           name="url" 
+                           placeholder="https://www.example.com" 
+                           required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Open URL</button>
+            </form>
+
+            <div class="quick-links">
+                <h3 style="grid-column: 1/-1; margin-bottom: 10px;">Quick Links:</h3>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="open_url">
+                    <input type="hidden" name="url" value="https://www.google.com">
+                    <button type="submit" class="quick-link-btn">Google</button>
+                </form>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="open_url">
+                    <input type="hidden" name="url" value="https://github.com">
+                    <button type="submit" class="quick-link-btn">GitHub</button>
+                </form>
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="open_url">
+                    <input type="hidden" name="url" value="https://stackoverflow.com">
+                    <button type="submit" class="quick-link-btn">Stack Overflow</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Python Script Launcher Section -->
+        <div class="utility-section">
+            <h2>🐍 Run Python Script</h2>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="run_python">
+                
+                <div class="form-group">
+                    <label for="script_path">Script Path:</label>
+                    <input type="text" 
+                           id="script_path" 
+                           name="script_path" 
+                           placeholder="/path/to/script.py" 
+                           required>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Run Script</button>
+            </form>
+
+            <div style="margin-top: 15px; padding: 10px; background-color: #e7f3ff; border-radius: 4px;">
+                <strong>Example Scripts:</strong>
+                <ul style="margin: 10px 0;">
+                    <li><code>manage.py check</code> - Check Django configuration</li>
+                    <li><code>manage.py showmigrations</code> - Show migration status</li>
+                    <li><code>scripts/backup.py</code> - Run backup script</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="utility-section">
+            <h2>📋 Management Links</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="{% url 'client-list' %}" class="btn btn-secondary">Clients</a>
+                <a href="{% url 'insurence-list' %}" class="btn btn-secondary">Insurances</a>
+                <a href="{% url 'subscription-list' %}" class="btn btn-secondary">Subscriptions</a>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="javascript:history.back()" class="btn btn-secondary">← Go Back</a>
+        </div>
+    </div>
+</body>
+</html>

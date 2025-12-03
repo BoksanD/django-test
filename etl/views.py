@@ -1,0 +1,128 @@
+from django.urls import reverse_lazy
+from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView
+from etl.models import Client,InsurenceType,Subscription
+from django.db.models import Q
+import subprocess
+import webbrowser
+from django.contrib import messages
+from django.shortcuts import redirect
+
+# Create your views here.
+
+class LaunchUtilityView(TemplateView):
+    template_name = "etl/launch_utility.html"
+    
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        
+        if action == 'open_url':
+            url = request.POST.get('url', 'https://www.example.com')
+            try:
+                webbrowser.open(url)
+                messages.success(request, f'Opened URL: {url}')
+            except Exception as e:
+                messages.error(request, f'Error opening URL: {str(e)}')
+        
+        elif action == 'run_python':
+            script_path = request.POST.get('script_path', '')
+            try:
+                # For security, you should validate the script_path
+                result = subprocess.run(
+                    ['python', script_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                messages.success(request, f'Script output: {result.stdout}')
+                if result.stderr:
+                    messages.warning(request, f'Errors: {result.stderr}')
+            except Exception as e:
+                messages.error(request, f'Error running script: {str(e)}')
+        
+        return redirect('launch-utility')
+
+class ClientListView(ListView):
+    model = Client
+    template_name = "etl/client_list.html"
+    context_object_name = "clients"
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = Client.objects.all().order_by("reg_date")
+        search_query = self.request.GET.get('search', '')
+        
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(reg_date__icontains=search_query)
+            )
+        
+        # Filter by active status
+        status_filter = self.request.GET.get('status', '')
+        if status_filter == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status_filter == 'inactive':
+            queryset = queryset.filter(is_active=False)
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '')
+        context['status_filter'] = self.request.GET.get('status', '')
+        return context
+
+class ClientCreateView(CreateView):
+    model = Client
+    template_name = "etl/client_form.html"
+    fields = ['name','reg_date','is_active']
+    success_url = reverse_lazy('client-list')
+
+class ClientUpdateView(UpdateView):
+    model = Client
+    template_name = "etl/client_form.html"
+    fields = ['name','reg_date','is_active']
+    success_url = reverse_lazy('client-list')
+
+class ClientDeleteView(DeleteView):
+    model = Client
+    template_name = "etl/client_confirm_delete.html"
+    success_url = reverse_lazy('client-list')
+
+class InsurenceListView(ListView):
+    model = InsurenceType
+    template_name = "etl/insurence_list.html"
+    context_object_name = "insurences"
+
+class InsurenceCreateView(CreateView):
+    model = InsurenceType
+    template_name = "etl/insurence_form.html"
+    fields = ['name','price','expires_in_days']
+    success_url = reverse_lazy('insurence-list')
+
+class InsurenceUpdateView(UpdateView):
+    model = InsurenceType
+    template_name = "etl/insurence_form.html"
+    success_url = reverse_lazy('insurence-list')
+class InsurenceDeleteView(DeleteView):
+    model = InsurenceType
+    template_name = "etl/insurence_confirm_delete.html"
+    success_url = reverse_lazy('insurence-list')
+class SubscriptionListView(ListView):
+    model = Subscription
+    template_name = "etl/subscription_list.html"
+    context_object_name = "subscriptions"
+class SubscriptionCreateView(CreateView):
+    model = Subscription
+    template_name = "etl/subscription_form.html"
+    fields = ['payment_method','client','insurence']
+    success_url = reverse_lazy('subscription-list')
+class SubscriptionUpdateView(UpdateView):
+    model = Subscription
+    template_name = "etl/subscription_form.html"
+    fields = ['payment_method','client','insurence']
+    success_url = reverse_lazy('subscription-list')
+class SubscriptionDeleteView(DeleteView):
+    model = Subscription
+    template_name = "etl/subscription_confirm_delete.html"
+    success_url = reverse_lazy('subscription-list')
