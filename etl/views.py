@@ -1,5 +1,5 @@
 from django.urls import reverse_lazy
-from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView
+from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView, DetailView
 from etl.models import Client,InsurenceType,Subscription
 from django.db.models import Q,ExpressionWrapper, DurationField,F
 import subprocess
@@ -7,6 +7,9 @@ import webbrowser
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
+
+from etl.models.payment import Payment
+from etl.payment_form import PaymentForm
 from .subscription_form import SubscriptionForm
 
 # Create your views here.
@@ -155,3 +158,28 @@ class SubscriptionDeleteView(DeleteView):
     model = Subscription
     template_name = "etl/subscription_confirm_delete.html"
     success_url = reverse_lazy('subscription-list')
+
+class PaymentCreateView(CreateView):
+    model = Payment
+    template_name = "etl/payment_form.html"
+    form_class = PaymentForm
+    success_url = reverse_lazy('subscription-list')
+
+    def form_valid(self, form):
+        subscription_id = self.kwargs['subscription_id']
+        form.instance.subscription_id = subscription_id
+        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subscription_id'] = self.kwargs['subscription_id']
+        return context
+
+class PaymentListView(ListView):
+    model = Payment
+    template_name = "etl/payment_details.html"
+    context_object_name = "payments"
+
+    def get_queryset(self):
+        subscription_id = self.kwargs['subscription_id']
+        return Payment.objects.filter(subscription_id = subscription_id)
+

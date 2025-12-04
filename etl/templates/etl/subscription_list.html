@@ -181,6 +181,8 @@
                     </td>
                     <td class="actions">
                         <a href="{% url 'subscription-edit' subscription.pk %}" class="btn btn-primary">Edit</a>
+                        <a href="{% url 'payment-add' subscription.pk %}" class="btn btn-success">Add payment</a>
+                        <a href="{% url 'payment-list' subscription.pk %}" class="btn btn-warning">Payments</a>
                     </td>
                 </tr>
                 {% empty %}

@@ -20,4 +20,8 @@ urlpatterns = [
     path('subscriptions/add/',views.SubscriptionCreateView.as_view(),name='subscription-add'),
     path('subscriptions/<int:pk>/edit/',views.SubscriptionUpdateView.as_view(),name='subscription-edit'),
     path('subscriptions/<int:pk>/delete/',views.SubscriptionDeleteView.as_view(),name='subscription-delete'),
+
+    # Payments
+    path('payments/add/<int:subscription_id>/', views.PaymentCreateView.as_view(), name='payment-add'),
+    path('payments/list/<int:subscription_id>/', views.PaymentListView.as_view(), name='payment-list')
 ]
