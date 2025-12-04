@@ -141,6 +141,27 @@ class SubscriptionListView(ListView):
             queryset = queryset.filter(valid_till__lt=now)
         
         return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        queryset = self.object_list  
+        now = timezone.now()
+
+        context['total_active'] = queryset.filter(valid_till__gt = now).count()
+        context['total_expired'] = queryset.filter(valid_till__lt = now).count()
+        client_info = {}
+
+        for sub in queryset:
+            client = sub.client.name
+
+            if client not in client_info:
+                client_info[client] = {"active":0, "expired":0}
+            if sub.valid_till > now:
+                client_info[client]["active"] +=1
+            else:
+                client_info[client]["expired"] +=1
+        context["client_info"] = client_info
+        return context
 
 
 class SubscriptionCreateView(CreateView):

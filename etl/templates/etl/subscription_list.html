@@ -212,5 +212,30 @@
         </div>
         {% endif %}
     </div>
+    <div class="container" style="margin-top: 10px;">
+            <h3>Details</h3>
+
+    <h5>Total:</h5>
+    <p>Active: {{ total_active }}</p>
+    <p>Expired: {{ total_expired }}</p>
+
+    <h5 style="margin-top:20px;">Per Client</h5>
+    <table class="table table-bordered mt-2">
+        <tr>
+            <th>Client</th>
+            <th>Active</th>
+            <th>Expired</th>
+        </tr>
+
+        {% for client, info in client_info.items %}
+        <tr>
+            <td>{{ client }}</td>
+            <td>{{ info.active }}</td>
+            <td>{{ info.expired }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    </div>
 </body>
 </html>
