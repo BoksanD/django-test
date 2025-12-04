@@ -85,7 +85,13 @@ DATABASES = {
     },
 
 }
-
+DATABRICKS_CONNECTIONS = {
+    'default': {
+        'HOST': "xxx",
+        'TOKEN': "xx-3",
+        'WAREHOUSE_ID': "xxxx",
+    },
+}
 
 
 # Password validation
