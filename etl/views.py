@@ -1,16 +1,21 @@
+
 from django.urls import reverse_lazy
 from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView, DetailView
-from etl.models import Client,InsurenceType,Subscription
+from etl.models import Client,InsurenceType,Subscription, Payment
 from django.db.models import Q,ExpressionWrapper, DurationField,F
 import subprocess
 import webbrowser
+
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
 
-from etl.models.payment import Payment
 from etl.payment_form import PaymentForm
 from .subscription_form import SubscriptionForm
+
+
+from django.views.generic import TemplateView
+from .databricks_utils import DatabricksConnection
 
 # Create your views here.
 
@@ -113,6 +118,7 @@ class InsurenceDeleteView(DeleteView):
     model = InsurenceType
     template_name = "etl/insurence_confirm_delete.html"
     success_url = reverse_lazy('insurence-list')
+
 class SubscriptionListView(ListView):
     model = Subscription
     template_name = "etl/subscription_list.html"
@@ -141,7 +147,7 @@ class SubscriptionListView(ListView):
             queryset = queryset.filter(valid_till__lt=now)
         
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         queryset = self.object_list  
@@ -203,4 +209,27 @@ class PaymentListView(ListView):
     def get_queryset(self):
         subscription_id = self.kwargs['subscription_id']
         return Payment.objects.filter(subscription_id = subscription_id)
+
+
+
+class SourceSystemView(TemplateView):
+    template_name = "etl/source_system.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            databricks = DatabricksConnection('default')
+            systems = databricks.execute_query(
+                "SELECT * FROM nore_catalog.config.etl_source_system"
+            )
+            # Debug: print column names
+            if systems:
+                print("Column names:", systems[0].keys())
+            context['source_systems'] = systems
+        except Exception as e:
+            context['source_systems'] = []
+            context['error'] = str(e)
+        return context
+ 
+
 

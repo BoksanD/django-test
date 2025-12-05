@@ -9,8 +9,12 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
-
+import ssl
+import os
 from pathlib import Path
+
+ssl._create_default_https_context = ssl._create_unverified_context
+os.environ['PYTHONHTTPSVERIFY'] = '0'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,7 +82,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    },
+
+}
+DATABRICKS_CONNECTIONS = {
+    'default': {
+        'HOST': "xxx",
+        'TOKEN': "xx-3",
+        'WAREHOUSE_ID': "xxxx",
+    },
 }
 
 

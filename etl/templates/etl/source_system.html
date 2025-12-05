@@ -1,0 +1,21 @@
+<h1>Source Systems</h1>
+<table>
+    <tr>
+        <th>System Id</th>
+        <th>System Name</th>
+        <th>System Type</th>
+        <th>Parameters</th>
+    </tr>
+    {% for system in source_systems %}
+    <tr>
+        <th>{{system.system_id}}</th>
+        <th>{{system.system_name}}</th>
+        <th>{{system.system_type}}</th>
+        <th>{{system.parameters}}</th>
+    </tr>
+    {% endfor %}
+</table>
+
+{{error}}
+
+{{debug}}

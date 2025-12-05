@@ -23,5 +23,8 @@ urlpatterns = [
 
     # Payments
     path('payments/add/<int:subscription_id>/', views.PaymentCreateView.as_view(), name='payment-add'),
-    path('payments/list/<int:subscription_id>/', views.PaymentListView.as_view(), name='payment-list')
+    path('payments/list/<int:subscription_id>/', views.PaymentListView.as_view(), name='payment-list'),
+
+    # Etl Source System
+    path('source-system/',views.SourceSystemView.as_view(), name='source-system-list'),    
 ]
