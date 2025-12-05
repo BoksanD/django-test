@@ -1,11 +1,11 @@
 
 from django.urls import reverse_lazy
-from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView, DetailView
-from etl.models import Client,InsurenceType,Subscription, Payment
+from django.views.generic import ListView,CreateView,UpdateView,DeleteView, TemplateView
+from etl.models import Client,InsurenceType,Subscription, Payment, EtlSourceSystem
 from django.db.models import Q,ExpressionWrapper, DurationField,F
 import subprocess
 import webbrowser
-
+from django.http import HttpResponseBadRequest
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -231,5 +231,24 @@ class SourceSystemView(TemplateView):
             context['error'] = str(e)
         return context
  
+class SourceSystemCreateView(CreateView):
+    model = EtlSourceSystem
+    template_name = "etl/source_system_form.html"
+    fields = ['system_name','system_type','parameters']
+    success_url = reverse_lazy('client-list')
 
+    def form_valid(self,form):
+        system_name = form.cleaned_data['system_name']
+        system_type = form.cleaned_data['system_type']
+        parameters = form.cleaned_data['parameters']
 
+        query = f"""
+            INSERT INTO nore_catalog.config.etl_source_system (system_name,system_type,parameters)
+            VALUES ('{system_name}','{system_type}', '{parameters}')
+        """
+        databricks = DatabricksConnection('default')
+        try:
+            databricks.execute_query(query)
+        except Exception as e:
+            return HttpResponseBadRequest(f'Databricks error: {str(e)}')
+        return super().form_valid(form)

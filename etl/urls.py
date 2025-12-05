@@ -27,4 +27,5 @@ urlpatterns = [
 
     # Etl Source System
     path('source-system/',views.SourceSystemView.as_view(), name='source-system-list'),    
+    path('source-system/add',views.SourceSystemCreateView.as_view(), name='source-system-add'),    
 ]
